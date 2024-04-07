@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 Widget entryField(
   BuildContext context,
@@ -12,7 +13,8 @@ Widget entryField(
     ValueChanged<String>? onChanged,
     FocusNode? focusNode,
     bool obscureText = false,
-    EdgeInsets? innerPadding
+    EdgeInsets? innerPadding,
+    List<TextInputFormatter>? inputFormatters
   }
 ){
   return Padding(
@@ -31,9 +33,11 @@ Widget entryField(
           controller: controller,
           onChanged: onChanged,
           focusNode: focusNode,
+          inputFormatters: inputFormatters,
           obscureText: obscureText,
           minLines: 1,
           maxLines: maxLines,
+          //maxLength: 10,
           textAlignVertical: TextAlignVertical.center,
           textAlign: TextAlign.left,
           cursorColor: Theme.of(context).textTheme.labelLarge!.color,

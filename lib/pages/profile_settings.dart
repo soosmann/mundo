@@ -4,8 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
+import 'package:mundo/models/location.dart';
 import 'package:mundo/models/user_data_manager.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:mundo/pages/select_user_location_settings.dart';
 import 'package:mundo/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:mundo/models/auth.dart';
@@ -24,6 +26,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
   final TextEditingController _usernameController = TextEditingController();
 
   File? newProfilePicture;
+  MundoLocation? newUserLocation;
 
   String userNameInfoString = "Dies ist dein aktueller Benutzername";
   bool isUserNameAvailable = true;
@@ -36,7 +39,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
         newProfilePicture = File(pickedImage.path);
       });
     } on PlatformException catch(e) {
-      print('Failed to pick image: $e');
+      throw Exception('Failed to pick image: $e');
     }
   }
 
@@ -57,22 +60,27 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
             if (_usernameController.text != widget.user.username && isUserNameAvailable){
               userDataManager.updateUsername(_usernameController.text);
             }
+            if ((newUserLocation != null) && (newUserLocation != widget.user.location)){
+              userDataManager.saveUsersLocation(newUserLocation!);
+            }
             if (newProfilePicture != null){
-              bool uploadSuccess = await userDataManager.saveProfileImage(
+              //bool uploadSuccess = await userDataManager.saveProfileImage(
+              await userDataManager.saveProfileImage(
                 newProfilePicture!, 
                 SettableMetadata(
                   contentType: 'image/jpeg',
                   customMetadata: {'picked': 'image'}
                 )
-              );
-              if (uploadSuccess ==  true){
-                  setState(() {
-                    Navigator.pop(context);
-                  });
-              }
-            }else{
+              );/*
+              if (uploadSuccess == true){
+                setState(() {
+                  Navigator.pop(context);
+                });
+              }*/
+            }/*else{
               Navigator.pop(context);
-            }
+            }*/
+            setState(() => Navigator.pop(context));
           },
         ),
       ],
@@ -155,6 +163,50 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
     );
   }
 
+  Widget _locationChangeOption(){
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "Location",
+            style: TextStyle(fontSize: 20),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => SelectUserLocationSettingsView(
+                  user: widget.user,
+                  onLocationSelected: (selectedLocation) => setState(() => newUserLocation = selectedLocation)
+                  )
+                )
+              );
+            },
+            child: Container(
+              alignment: Alignment.center,
+              width: 150,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary, 
+                borderRadius: BorderRadius.circular(20)
+              ),
+              child: Text(
+                newUserLocation != null 
+                  ? newUserLocation!.city
+                  : widget.user.location != null ? widget.user.location!.city : "Ort wählen",
+                style: const TextStyle(
+                  fontSize: 20
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _signOutButton(){
     return ElevatedButton(
       style: ButtonStyle(
@@ -176,7 +228,31 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
     );
   }
 
-  Widget userNameInfo(){
+  Widget _deleteAccountButton(){
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateColor.resolveWith((states) => Colors.red),
+      ),
+      onPressed: (){
+        setState(() {
+          if (AuthService().currentUser != null){
+            AuthService().currentUser!.delete().then((value) => {
+              setState(() => UserDataManager().deleteCurrentUsersAccount())
+              //Navigator.pop(context)
+            });
+          }
+        });
+      },
+      child: const Text(
+        "Account löschen",
+        style: TextStyle(
+          color: Colors.white
+        ),
+      ),
+    );
+  }
+
+  Widget _userNameInfo(){
     return Text(
       userNameInfoString,
       style: TextStyle(
@@ -226,9 +302,11 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
                 });
               }
             ),
-            userNameInfo(),
+            _userNameInfo(),
             _darkModeSwitch(),
-            _signOutButton()
+            _locationChangeOption(),
+            _signOutButton(),
+            _deleteAccountButton()
           ]
         ),
       )

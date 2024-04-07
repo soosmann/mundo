@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/post_data_manager.dart';
-
+import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user_data_manager.dart';
+import 'package:mundo/pages/other_profile_view.dart';
+import 'package:mundo/pages/post_view.dart';
 
 class MapView extends StatefulWidget{
   const MapView({super.key});
@@ -13,53 +17,49 @@ class MapView extends StatefulWidget{
 }
 
 class _MapViewState extends State<MapView>{
+  PostDataManager postDataManager = PostDataManager();
+  UserDataManager userDataManager = UserDataManager();
+
   int postIndex = 0;
+  MundoUser? currentPostsOwner;
 
   List<Post> posts = [];
-  
+
   @override
   void initState() {
     super.initState();
-    PostDataManager().getPostsByUserId(AuthService().currentUser!.uid).then((value)=> setState(() => posts = value));
-    //loadPosts();
+    postDataManager.getPostsForFyPage(AuthService().currentUser!.uid, DateTime.now().millisecondsSinceEpoch).then((value) => setState(() {
+      posts.addAll(value);
+      if (posts.isNotEmpty){
+        userDataManager.getMundoUserById(posts[postIndex].ownerId).then((value) => setState(() => currentPostsOwner = value));
+      }
+    }));
   }
-  
-  /*
-  void loadPosts() async {
-    try {
-      // Fetch the list of posts
-      List<Post> fetchedPosts = await PostDataManager().getPostsByUserId(AuthService().currentUser!.uid);
-      setState(() {
-        posts = fetchedPosts; // Update the local variable with the fetched posts
-      });
-    } catch (error) {
-      // Handle errors
-      print('Error loading posts: $error');
-    }
-  }
-  */
 
   Widget postMainImage(){
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.width-10, // padding 2*5 = 10
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: posts.isEmpty
-            ? Icon(
-                Icons.image,
-                size: MediaQuery.of(context).size.width-10,
-                color: Theme.of(context).colorScheme.secondary,
-              )
-            : Image.file(
-                posts[postIndex].postElements[posts[postIndex].mainImageIndex!].imageFile,
-                fit: BoxFit.cover,
-              )
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PostView(post: posts[postIndex], isOwnPost: false))),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.width-10, // padding 2*5 = 10
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: posts.isEmpty
+              ? Icon(
+                  Icons.image,
+                  size: MediaQuery.of(context).size.width-10,
+                  color: Theme.of(context).colorScheme.secondary,
+                )
+              : Image.file(
+                  posts[postIndex].postElements[posts[postIndex].mainImageIndex!].imageFile,
+                  fit: BoxFit.cover,
+                )
+          ),
         ),
       ),
     );
@@ -73,6 +73,7 @@ class _MapViewState extends State<MapView>{
         height: MediaQuery.of(context).size.width-10, // padding 2*5 = 10
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
+          color: Theme.of(context).colorScheme.primary,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -81,19 +82,6 @@ class _MapViewState extends State<MapView>{
               size: MediaQuery.of(context).size.width-10,
               color: Theme.of(context).colorScheme.secondary,
             )
-        ),
-      ),
-    );
-  }
-
-  Widget profileImage(){
-    return SizedBox(
-      width: 50,
-      height: 50,
-      child: ClipOval(
-        child: Image.asset(
-          "assets/images/marcel_profile.jpg",
-          fit: BoxFit.cover,
         ),
       ),
     );
@@ -152,7 +140,10 @@ class _MapViewState extends State<MapView>{
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
       child: Row(
         children: [
-          profileImage(),
+          InkWell(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => OtherProfileView(user: currentPostsOwner!))),
+            child: roundProfileImage(context, currentPostsOwner?.profilePictureUrl, 50, 50)
+          ),
           postInfoText(),
         ],
       ),
@@ -164,7 +155,7 @@ class _MapViewState extends State<MapView>{
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
       child: Row(
         children: [
-          profileImagePlaceholder(),
+          roundProfileImage(context, currentPostsOwner?.profilePictureUrl, 50, 50),
           postInfoTextPlaceholder(),
         ],
       ),
@@ -185,7 +176,7 @@ class _MapViewState extends State<MapView>{
                 child: FlutterMap(
                   key: UniqueKey(), // by always using a new unique key everytime, the widget seems completely new to Flutter and is rebuild -> allows map recentering
                   options: MapOptions(
-                    initialCenter: posts[postIndex].location,
+                    initialCenter: posts[postIndex].location!.coordinates,
                     initialZoom: 5,
                   ),
                   children: [
@@ -198,8 +189,8 @@ class _MapViewState extends State<MapView>{
                         Marker(
                           width: 50,
                           height: 50,
-                          point: posts[postIndex].location,
-                          child: profileImage()
+                          point: posts[postIndex].location!.coordinates,
+                          child: roundProfileImage(context, currentPostsOwner?.profilePictureUrl, 50, 50)
                         )
                       ],
                     )
@@ -217,6 +208,10 @@ class _MapViewState extends State<MapView>{
                         if (postIndex > 0){
                           setState(() {
                             postIndex--;
+                            if (posts.isNotEmpty){
+                              userDataManager.getMundoUserById(posts[postIndex].ownerId)
+                                .then((value) => setState(() => currentPostsOwner = value));
+                            }
                           });
                         }
                       },
@@ -242,6 +237,15 @@ class _MapViewState extends State<MapView>{
                         if (postIndex < posts.length-1){
                           setState(() {
                             postIndex++;
+                            if (posts.isNotEmpty){
+                              userDataManager.getMundoUserById(posts[postIndex].ownerId)
+                                .then((value) => setState(() => currentPostsOwner = value));
+                            }
+                            if (postIndex == posts.length-2){
+                              postDataManager.getPostsForFyPage(AuthService().currentUser!.uid, posts.last.creationUnixTimeStamp).then((value) {
+                                posts.addAll(value);
+                              });
+                            }
                           });
                         }
                       },
@@ -271,9 +275,12 @@ class _MapViewState extends State<MapView>{
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [ 
-              SizedBox(
+              Container(
                 width: double.infinity,
                 height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 child: Stack(
                   alignment: Alignment.topCenter,
                   children: [
@@ -298,6 +305,10 @@ class _MapViewState extends State<MapView>{
                         if (postIndex > 0){
                           setState(() {
                             postIndex--;
+                            if (posts.isNotEmpty){
+                              userDataManager.getMundoUserById(posts[postIndex].ownerId)
+                                .then((value) => setState(() => currentPostsOwner = value));
+                            }
                           });
                         }
                       },
@@ -323,6 +334,10 @@ class _MapViewState extends State<MapView>{
                         if (postIndex < posts.length-1){
                           setState(() {
                             postIndex++;
+                            if (posts.isNotEmpty){
+                              userDataManager.getMundoUserById(posts[postIndex].ownerId)
+                                .then((value) => setState(() => currentPostsOwner = value));
+                            }
                           });
                         }
                       },
@@ -349,7 +364,7 @@ class _MapViewState extends State<MapView>{
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       body: SafeArea(
-        child: posts.isEmpty 
+        child: posts.isEmpty
         ? Column(
             children: [
               postMainImagePlaceholder(),

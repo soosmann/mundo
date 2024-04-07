@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: Provider.of<ThemeProvider>(context).themeData,
+      theme: Provider.of<ThemeProvider>(context).themeData, // TODO: Collision of Theme with general smartphone theme
       home: const WidgetTree(),
     );
   }

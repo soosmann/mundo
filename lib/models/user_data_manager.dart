@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mundo/models/auth.dart';
+import 'package:mundo/models/location.dart';
 import 'package:mundo/models/mundo_user.dart';
 import 'package:uuid/uuid.dart';
 
@@ -13,11 +14,24 @@ class UserDataManager{
   bool saveUser(String email, String username){
     final Map<String, dynamic> dataJson = <String, dynamic>{
       "email": email,
-      "username": username
+      "username": username,
+      "posts": 0,
+      "followers": 0,
+      "following": 0,
     };
     String? currentUserId = _authService.currentUser?.uid;
     if (currentUserId != null) {
       db.collection("users").doc(currentUserId).set(dataJson);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool deleteCurrentUsersAccount(){
+    String? currentUserId = _authService.currentUser?.uid;
+    if (currentUserId != null) {
+      db.collection("users").doc(currentUserId).delete();
       return true;
     } else {
       return false;
@@ -51,6 +65,16 @@ class UserDataManager{
     }
   }
 
+  Future<MundoUser> getMundoUserById(String userId) async {
+    String? currentUserId = _authService.currentUser?.uid;
+    if (currentUserId != null) {
+      final result = await db.collection("users").doc(userId).get();
+      return MundoUser.fromFirebaseDoc(result);
+    } else {
+      return MundoUser(id: "", email: "", username: "", profilePictureUrl: "", postCount: 0, followerCount: 0, followingCount: 0);
+    }
+  }
+
   Future<bool> saveProfileImage(File image, SettableMetadata metadata) async {
     String? currentUserId = _authService.currentUser?.uid;
 
@@ -68,6 +92,27 @@ class UserDataManager{
           }     
         });
       });
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool saveUsersLocation(MundoLocation location){
+    String? currentUserId = _authService.currentUser?.uid;
+
+    Map<String, dynamic> dataJson = <String, dynamic>{
+      "loc": {
+        "gMapsId": location.googleMapsId,
+        "city": location.city,
+        "region": location.region,
+        "lat": location.coordinates.latitude,
+        "lng": location.coordinates.longitude
+      }
+    };
+
+    if (currentUserId != null) {
+      db.collection("users").doc(currentUserId).update(dataJson);
       return true;
     } else {
       return false;
@@ -174,5 +219,29 @@ class UserDataManager{
     } else {
       return false;
     }
+  }
+
+  /// Returns a list of users that are following the user with the given id
+  Future<List<MundoUser>> getFollowers(String userId) async {
+    final result = await db.collection("follows").where("follows", isEqualTo: userId).get();
+    List<MundoUser> followers = [];
+
+    for (var doc in result.docs) {
+      final result = await db.collection("users").doc(doc["userid"]).get();
+      followers.add(MundoUser.fromFirebaseDoc(result));
+    }
+    return followers;
+  }
+  
+  /// Returns a list of users that the user with the given id is following
+  Future<List<MundoUser>> getFollowings(String userId) async {
+    final result = await db.collection("follows").where("userid", isEqualTo: userId).get();
+    List<MundoUser> following = [];
+
+    for (var doc in result.docs) {
+      final result = await db.collection("users").doc(doc["follows"]).get();
+      following.add(MundoUser.fromFirebaseDoc(result));
+    }
+    return following;
   }
 }

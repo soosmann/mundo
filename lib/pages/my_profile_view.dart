@@ -9,6 +9,8 @@ import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:mundo/pages/post_view.dart';
 import 'package:mundo/pages/profile_settings.dart';
 import 'package:mundo/pages/select_post_location.dart';
+import 'package:mundo/pages/show_followers.dart';
+import 'package:mundo/pages/show_followings.dart';
 
 class MyProfileView extends StatefulWidget{
   const MyProfileView({super.key});
@@ -41,19 +43,21 @@ class _MyProfileViewState extends State<MyProfileView> {
       child: Row(
         children: [
           Text(
-            "${user?.username ?? "username"}, ",
+            user?.username ?? "username",
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 25,
             ),
           ),
-          const Text(
-            "Dörentrup",
-            style: TextStyle(
-              fontWeight: FontWeight.normal,
-              fontSize: 25
-            ),
-          ),
+          user?.location != null 
+            ? Text(
+                ", ${user!.location!.city}",
+                style: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 25
+                ),
+              ) 
+            : const SizedBox(height: 0),
           const Spacer(),
           GestureDetector(
             onTap: () {
@@ -63,7 +67,6 @@ class _MyProfileViewState extends State<MyProfileView> {
                   MaterialPageRoute(builder: (context) => ProfileSettingsView(user: user!))
                 );
               }
-              
             },
             child: Container(
               height: 35, 
@@ -85,32 +88,47 @@ class _MyProfileViewState extends State<MyProfileView> {
       padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
       child: Row(
         children: [
-          roundProfileImage(context, user?.profilePictureUrl, 100, 100),
+          InkWell(
+            onTap: () {
+              if (user != null) Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileSettingsView(user: user!)));
+            },
+            child: roundProfileImage(context, user?.profilePictureUrl, 100, 100),
+          ),
           Expanded(
             child: Column(
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text(
+                    const Text(
                       "Posts",
                       style: TextStyle(
                         fontWeight: FontWeight.normal,
                         fontSize: 20,
                       ),
                     ),
-                    Text(
-                      "Follower",
-                      style: TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () {
+                        if (user != null) Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowersView(userId: user!.id)));
+                      },
+                      child: const Text(
+                        "Follower",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     ),
-                    Text(
-                      "Folgt",
-                      style: TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () {
+                        if (user != null) Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowingsView(userId: user!.id)));
+                      },
+                      child: const Text(
+                        "Folgt",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     ),
                   ]
@@ -125,18 +143,28 @@ class _MyProfileViewState extends State<MyProfileView> {
                         fontSize: 20
                       ),
                     ),
-                    Text(
-                      user?.followerCount.toString() ?? "0",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () {
+                        if (user != null) Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowersView(userId: user!.id)));
+                      },
+                      child: Text(
+                        user?.followerCount.toString() ?? "0",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     ),
-                    Text(
-                      user?.followingCount.toString() ?? "0",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () {
+                        if (user != null) Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowingsView(userId: user!.id)));
+                      },
+                      child: Text(
+                        user?.followingCount.toString() ?? "0",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     )
                   ]
@@ -158,46 +186,66 @@ class _MyProfileViewState extends State<MyProfileView> {
   Widget postField(
     Post post,
   ){
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PostView(post: post))
-        );
-      },
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PostView(post: post, user: user, isOwnPost: true))),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
-        child: SizedBox(
-          width: 335,
-          height: 335,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
-                child: Image.file(
-                  post.postElements[post.mainImageIndex!].imageFile,
-                  fit: BoxFit.fitHeight,
-                )
-              ),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(15.0),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: MediaQuery.of(context).size.width - 10,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondary),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width - 10,
+                  height: MediaQuery.of(context).size.width - 10,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.file(
+                      post.postElements[post.mainImageIndex!].imageFile,
+                      fit: BoxFit.cover,
+                    )
                   ),
-                  child: Text(
-                    post.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width - 10,
+                    child: Text(
+                      post.title,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width - 10,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: Theme.of(context).textTheme.labelLarge!.color,
+                        ),
+                        Text(
+                          "${post.location!.city}, ${post.location!.region}",
+                          textAlign: TextAlign.left,
+                          style: const TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         )
       ),

@@ -6,6 +6,8 @@ import 'package:mundo/models/post_data_manager.dart';
 import 'package:mundo/models/user_data_manager.dart';
 import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:mundo/pages/post_view.dart';
+import 'package:mundo/pages/show_followers.dart';
+import 'package:mundo/pages/show_followings.dart';
 
 class OtherProfileView extends StatefulWidget{
   final MundoUser user;
@@ -36,7 +38,7 @@ class _OtherProfileViewState extends State<OtherProfileView> {
       padding: const EdgeInsets.all(5.0),
       child: Row(
         children: [
-          GestureDetector(
+          InkWell(
             onTap: () => Navigator.pop(context),
             child: const Icon(
               Icons.chevron_left,
@@ -50,13 +52,15 @@ class _OtherProfileViewState extends State<OtherProfileView> {
               fontSize: 25,
             ),
           ),
-          const Text(
-            ", Dörentrup",
-            style: TextStyle(
-              fontWeight: FontWeight.normal,
-              fontSize: 25
-            ),
-          ),
+          widget.user.location != null 
+            ? Text(
+                ", ${widget.user.location!.city}",
+                style: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 25
+                ),
+              ) 
+            : const SizedBox(height: 0),
           const Spacer(),
         ],
       ),
@@ -72,28 +76,34 @@ class _OtherProfileViewState extends State<OtherProfileView> {
           Expanded(
             child: Column(
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                     Text(
+                    const Text(
                       "Posts",
                       style: TextStyle(
                         fontWeight: FontWeight.normal,
                         fontSize: 20,
                       ),
                     ),
-                    Text(
-                      "Follower",
-                      style: TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowersView(userId: widget.user.id))),
+                      child: const Text(
+                        "Follower",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     ),
-                    Text(
-                      "Folgt",
-                      style: TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowingsView(userId: widget.user.id))),
+                      child: const Text(
+                        "Folgt",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     ),
                   ]
@@ -108,18 +118,24 @@ class _OtherProfileViewState extends State<OtherProfileView> {
                         fontSize: 20
                       ),
                     ),
-                    Text(
-                      widget.user.followerCount.toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowersView(userId: widget.user.id))),
+                      child: Text(
+                        widget.user.followerCount.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     ),
-                    Text(
-                      widget.user.followingCount.toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 20
+                    InkWell(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowFollowingsView(userId: widget.user.id))),
+                      child: Text(
+                        widget.user.followingCount.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 20
+                        ),
                       ),
                     )
                   ]
@@ -200,46 +216,66 @@ class _OtherProfileViewState extends State<OtherProfileView> {
   Widget postField(
     Post post,
   ){
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PostView(post: post))
-        );
-      },
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PostView(post: post, user: widget.user, isOwnPost: false))),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
-        child: SizedBox(
-          width: 335,
-          height: 335,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
-                child: Image.file(
-                  post.postElements[post.mainImageIndex!].imageFile,
-                  fit: BoxFit.fitHeight,
-                )
-              ),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(15.0),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: MediaQuery.of(context).size.width - 10,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondary),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width - 10,
+                  height: MediaQuery.of(context).size.width - 10,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.file(
+                      post.postElements[post.mainImageIndex!].imageFile,
+                      fit: BoxFit.cover,
+                    )
                   ),
-                  child: Text(
-                    post.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width - 10,
+                    child: Text(
+                      post.title,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width - 10,
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          color: Colors.black,
+                        ),
+                        Text(
+                          "${post.location!.city}, ${post.location!.region}",
+                          textAlign: TextAlign.left,
+                          style: const TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         )
       ),

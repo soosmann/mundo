@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/user_data_manager.dart';
+import 'package:mundo/pages/select_user_location.dart';
+import 'package:flutter/services.dart';
 
 class RegisterView extends StatefulWidget {
   final String email;
@@ -102,6 +104,9 @@ class _RegisterViewState extends State<RegisterView> {
 
   Widget _signInButton(){
     return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateColor.resolveWith((states) => Theme.of(context).buttonTheme.colorScheme!.primary),
+      ),
       onPressed: () async {
         if (await isUsernameInUse(_usernameController.text)) {
           return;
@@ -110,7 +115,10 @@ class _RegisterViewState extends State<RegisterView> {
             await registerWithEmailAndPassword(_emailController.text, _passwordController.text).then((value) {
               UserDataManager().saveUser(_emailController.text, _usernameController.text);
               if (loginDataError == null){
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SelectUserLocationView())
+                );
               }
             });
           } on FirebaseException catch (e) {
@@ -120,7 +128,12 @@ class _RegisterViewState extends State<RegisterView> {
           }
         }
       },
-      child: const Text("Registrieren"),
+      child: Text(
+        "Registrieren",
+        style: TextStyle(
+          color: Theme.of(context).textTheme.labelLarge!.color,
+        ),
+      ),
     );
   }
 
@@ -141,7 +154,18 @@ class _RegisterViewState extends State<RegisterView> {
               const EdgeInsets.all(8), 
               "Benutzername", 
               _usernameController,
-              1
+              1,
+              innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp('[\\ ]')), 
+                LengthLimitingTextInputFormatter(10), 
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  return TextEditingValue(
+                    text: newValue.text.toLowerCase(),
+                    selection: newValue.selection,
+                  );
+                })
+              ]
             ),
             if (usernameError != null) _errorMessage(usernameError!),
             const SizedBox(height: 40),
@@ -153,7 +177,8 @@ class _RegisterViewState extends State<RegisterView> {
               const EdgeInsets.all(8), 
               "E-Mail", 
               _emailController,
-              1
+              1,
+              innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5)
             ),
             entryField(
               context, 
@@ -162,7 +187,9 @@ class _RegisterViewState extends State<RegisterView> {
               const EdgeInsets.all(8), 
               "Passwort", 
               _passwordController,
-              1
+              1,
+              innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+              obscureText: true
             ),
             if (loginDataError != null) _errorMessage(loginDataError!),
             _signInButton()

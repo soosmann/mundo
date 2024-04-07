@@ -81,14 +81,12 @@ class _CreatePostViewState extends State<CreatePostView> {
             onChanged: onChanged,
             minLines: 1,
             maxLines: maxLines,
+            inputFormatters: [LengthLimitingTextInputFormatter(200)],
             cursorColor: Theme.of(context).textTheme.labelLarge!.color,
             decoration: InputDecoration(
               labelText: title,
               floatingLabelBehavior: FloatingLabelBehavior.never,
               border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-              //disabledBorder: InputBorder.none,
-              //enabledBorder: InputBorder.none,
-              //focusedBorder: InputBorder.none,
             ),
           ),
         ),
@@ -123,7 +121,6 @@ class _CreatePostViewState extends State<CreatePostView> {
                   5,
                   innerPadding: const EdgeInsets.fromLTRB(5, 0, 5, 30),
                   onChanged: (value) => postElement.text = value,),*/
-                
                 _entryField(
                   "Schreib hier über deine Erlebnisse...", 
                   TextEditingController(text: postElement.text), 
@@ -259,7 +256,8 @@ class _CreatePostViewState extends State<CreatePostView> {
               titleInputController, 
               1,
               onChanged: (value) => setState(() => widget.post.changeTitle(value)),
-              innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5)
+              innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+              inputFormatters: [LengthLimitingTextInputFormatter(50)]
             ),
             _postContent(),
             _addPostElementButtons()

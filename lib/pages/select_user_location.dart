@@ -1,44 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
-import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/location_data_manager.dart';
 import 'package:mundo/models/mundo_user.dart';
-import 'package:mundo/models/post.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:mundo/models/user_data_manager.dart';
-import 'package:mundo/pages/create_post.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/models/location.dart';
 import 'package:location/location.dart';
+import 'package:mundo/models/user_data_manager.dart';
+import 'package:mundo/pages/home.dart';
 
-class SelectPostLocationView extends StatefulWidget {
-  const SelectPostLocationView({super.key});
+class SelectUserLocationView extends StatefulWidget {
+
+  const SelectUserLocationView({super.key});
 
   @override
-  State<SelectPostLocationView> createState() => _SelectPostLocationViewState();
+  State<SelectUserLocationView> createState() => _SelectUserLocationViewState();
 }
 
-class _SelectPostLocationViewState extends State<SelectPostLocationView> {
+class _SelectUserLocationViewState extends State<SelectUserLocationView> {
   LocationDataManager locationDataManager = LocationDataManager();
+  UserDataManager userDataManager = UserDataManager();
+
+  MundoUser? user;
 
   final predictedLocationsNotifier = ValueNotifier<List<MundoLocationWithoutCoordinates>>([]);
   String locationInput = "";
-  MundoLocation? chosenLocation; 
-
-  Post post = Post(
-    ownerId: AuthService().currentUser!.uid,
-    title: "Neuer Post", 
-    postElements: [],
-  );
-
-  MundoUser? user;
+  MundoLocation? chosenLocation;
 
   @override
   void initState() {
     super.initState();
-    UserDataManager().getUserData().then((value) => setState(() => user = value));
-    
+    userDataManager.getUserData().then((value) => setState(() => user = value));
     getLocation().then((coordinates) {
       locationDataManager.getMundoLocationByCoordinates(coordinates).then((mundoLocation) => 
         setState(() {
@@ -72,13 +65,12 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     }
 
     locationData = await location.getLocation();
-    //print("Coordinates: ${locationData.latitude}, ${locationData.longitude}");
     return LatLng(locationData.latitude!, locationData.longitude!);
   }
 
-  Widget headline(){
+  Widget _headline(){
     return const Text(
-      "Wo bist Du gewesen?",
+      "Wo wohnst du?",
       style: TextStyle(
         fontSize: 30,
         fontWeight: FontWeight.bold
@@ -86,7 +78,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
-  Widget positionMapPlaceholder(){
+  Widget _positionMapPlaceholder(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
       child: ClipRRect(
@@ -113,7 +105,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
-  Widget positionMap() {
+  Widget _positionMap() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
       child: ClipRRect(
@@ -126,7 +118,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
               FlutterMap(
                 key: UniqueKey(),
                 options: MapOptions(
-                  initialCenter: chosenLocation?.coordinates ?? const LatLng(0, 0), //post.location!.coordinates,
+                  initialCenter: chosenLocation?.coordinates ?? const LatLng(0, 0),
                   initialZoom: 5,
                 ),
                 children: [
@@ -139,7 +131,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
                       Marker(
                         width: 50,
                         height: 50,
-                        point: chosenLocation?.coordinates ?? const LatLng(0,0),//post.location!.coordinates,
+                        point: chosenLocation?.coordinates ?? const LatLng(0, 0),
                         child: roundProfileImage(
                           context, 
                           user?.profilePictureUrl,
@@ -158,17 +150,17 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
   
-  Widget locationEntry(){
+  Widget _locationEntry(){
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) async {
         if (textEditingValue.text.isEmpty) {
-          predictedLocationsNotifier.value = [];
-          return <String>[];
+          return const Iterable<String>.empty();
         } else {
           predictedLocationsNotifier.value = await locationDataManager.getAutoCompletionData(textEditingValue.text.toLowerCase());
           return predictedLocationsNotifier.value.map((location) => "${location.city}, ${location.region}");
         }
       },
+      onSelected: (option) {},
       fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
         textEditingController.text = locationInput;
         return entryField(
@@ -217,17 +209,18 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
-  Widget continueButton(){
+  Widget _continueButton(){
     return ElevatedButton(
       style: ButtonStyle(
         backgroundColor: MaterialStateColor.resolveWith((states) => Theme.of(context).buttonTheme.colorScheme!.primary),
       ),
       onPressed: () {
         if (chosenLocation != null) {
-          post.changeLocation(chosenLocation!);
-          Navigator.push(
-            context, 
-            MaterialPageRoute(builder: (context) => CreatePostView(post: post))
+          userDataManager.saveUsersLocation(chosenLocation!);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeView()),
+            (route) => false,
           );
         }
       },
@@ -240,6 +233,37 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
+  Widget _skipButton(){
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateColor.resolveWith((states) => Theme.of(context).buttonTheme.colorScheme!.primary),
+      ),
+      onPressed: () {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeView()),
+          (route) => false,
+        );
+      },
+      child: Text(
+        "Überspringen",
+        style: TextStyle(
+          color: Theme.of(context).textTheme.labelLarge!.color,
+        ),
+      )
+    );
+  }
+
+  Widget _buttonRow(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _skipButton(),
+        _continueButton()
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -248,13 +272,13 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
           child: Column(
             children: [
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
-              headline(),
+              _headline(),
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
-              locationEntry(),
+              _locationEntry(),
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
-              chosenLocation != null ? positionMap() : positionMapPlaceholder(),
+              user != null ? _positionMap() : _positionMapPlaceholder(),
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
-              continueButton(),
+              _buttonRow(),
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
             ],
           ),

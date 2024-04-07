@@ -44,8 +44,7 @@ class AuthService with ChangeNotifier {
       List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(email);
       return signInMethods.contains("password"); // usual auth method is "password"
     } catch (error) {
-      print('Error checking email: $error');
-      return false;
+      throw Exception(error);
     }
   }
 }

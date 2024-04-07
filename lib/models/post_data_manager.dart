@@ -1,13 +1,9 @@
-import 'dart:io';
-import 'dart:math' as math;
-import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/user_data_manager.dart';
+import 'package:mundo/models/mundo_user.dart';
 
 class PostDataManager{
   final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -56,8 +52,11 @@ class PostDataManager{
         "mainImageIndex": post.mainImageIndex,
         "date": post.creationUnixTimeStamp,
         "loc": {
-          "lat": post.location.latitude,
-          "lng": post.location.longitude
+          "gMapsId": post.location!.googleMapsId,
+          "city": post.location!.city,
+          "region": post.location!.region,
+          "lat": post.location!.coordinates.latitude,
+          "lng": post.location!.coordinates.longitude
         },
         "content": []
       };
@@ -74,7 +73,7 @@ class PostDataManager{
           });
         } else if (post.postElements[i] is PostImage){
           PostImage postImage = post.postElements[i] as PostImage;
-          String imageUrl = await savePostImage(postImage, post.title);
+          String imageUrl = await savePostImage(postImage, post.id);
           contentItems.addAll({
             "type": "image",
             "imageUrl": imageUrl,
@@ -90,26 +89,12 @@ class PostDataManager{
           .doc(post.id)
           .set(dataJson);
           
-        incrementPostAmount();
+        incrementPostAmount(currentUserId);
       } on FirebaseException catch (e) {
         print("Error: $e");
       }
     } else {
       print("No user logged in.");
-    }
-  }
-
-  Future<File> getImageFileFromUrl(String imageUrl) async {
-    try {
-      final response = await http.get(Uri.parse(imageUrl));
-      final documentDirectory = await getTemporaryDirectory();
-      String rng = math.Random().nextInt(10000).toString();
-      final file = File('${documentDirectory.path}/temp_image_$rng.jpg');
-      await file.writeAsBytes(response.bodyBytes);
-      return file;
-    } catch (e) {
-      print('Error downloading image: $e');
-      rethrow;
     }
   }
 
@@ -125,38 +110,80 @@ class PostDataManager{
         .get();
 
       for (var doc in result.docs){
-        List<dynamic> content = doc["content"];
-        List<dynamic> postElements = [];
-
-        for (var item in content){
-          if (item["type"] == "text"){
-            postElements.add(PostText(text: item["text"], position: item["position"]));
-          } else if (item["type"] == "image"){
-            postElements.add(PostImage(
-              imageFile: await getImageFileFromUrl(item["imageUrl"]),
-              isMainImage: item["isMainImage"],
-              position: item["position"]
-            ));
-          }
-        }
-        posts.add(Post(
-          customId: doc["id"],
-          ownerId: doc["owner"],
-          title: doc["title"],
-          postElements: postElements,
-          mainImageIndex: doc["mainImageIndex"],
-          location: LatLng(doc["loc"]["lat"], doc["loc"]["lng"])
-        ));
+        posts.add(await Post.createFromFirebaseMap(doc));
       }
     }
     return posts;
   }
 
-  void incrementPostAmount(){
+  void incrementPostAmount(String userId){
     String? currentUserId = authService.currentUser?.uid;
 
     if (currentUserId != null) {
-      db.collection("users").doc(currentUserId).update({"posts": FieldValue.increment(1)});
+      db.collection("users").doc(userId).update({"posts": FieldValue.increment(1)});
     }
   }
+
+  void decrementPostAmount(String userId){
+    String? currentUserId = authService.currentUser?.uid;
+
+    if (currentUserId != null) {
+      db.collection("users").doc(userId).update({"posts": FieldValue.increment(-1)});
+    }
+  }
+
+  Future<List<Post>> getPostsForFyPage(String userId, int timeStamp) async {
+    String? currentUserId = authService.currentUser?.uid;
+    List<Post> posts = [];
+
+    if (currentUserId != null){
+      List<MundoUser> followingUsers = await userDataManager.getFollowings(userId);
+      
+      final postResults = await db
+        .collection("posts")
+        .where("owner", whereIn: followingUsers.map((e) => e.id).toList())
+        .where("date", isLessThan: timeStamp)
+        .orderBy("date", descending: true)
+        .limit(3)
+        .get();
+
+      for (var doc in postResults.docs){
+        posts.add(await Post.createFromFirebaseMap(doc));
+      }
+    }
+    return posts;
+  }
+
+  Future<void> deletePost(String postId) async {
+    String? currentUserId = authService.currentUser?.uid;
+
+    if (currentUserId != null) {
+      try {
+        await db.collection("posts").doc(postId).delete();
+
+        var results = await storage.ref().child("posts").child(postId).listAll(); // cant directly delete dir, need to delete file by file
+        for (var item in results.items){
+          await item.delete();
+        }
+
+        decrementPostAmount(AuthService().currentUser!.uid);
+      } on FirebaseException catch (e) {
+        print("Error: $e");
+      }
+    }
+  }
+
+  Future<List<Post>> getPostsByLocationId(String googleMapsId) async {
+    String? currentUserId = authService.currentUser?.uid;
+    List<Post> posts = [];
+
+    if (currentUserId != null){
+      final postData = await db.collection("posts").where("loc.gMapsId", isEqualTo: googleMapsId).limit(6).get();
+      
+      for (var doc in postData.docs){
+        posts.add(await Post.createFromFirebaseMap(doc));
+      }
+    }
+    return posts;
+  }  
 }

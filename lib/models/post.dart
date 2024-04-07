@@ -1,6 +1,11 @@
 import 'dart:io';
+import 'dart:math' as math;
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:mundo/models/location.dart';
 import 'package:uuid/uuid.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Post{
   String id;
@@ -9,24 +14,24 @@ class Post{
   final List<dynamic> postElements;
   int? mainImageIndex;
   int creationUnixTimeStamp;
-  LatLng location;
+  MundoLocation? location;
 
   int _positionCounter = 0;
 
-  Post({String? customId, required this.ownerId, required this.title, required this.postElements, this.mainImageIndex, required this.location}): 
+  Post({String? customId, required this.ownerId, required this.title, required this.postElements, int? creationUnixTimeStamp, this.mainImageIndex, this.location}): 
     id = customId ?? const Uuid().v4(),
-    creationUnixTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch;
+    creationUnixTimeStamp = creationUnixTimeStamp ?? DateTime.now().toUtc().millisecondsSinceEpoch;
 
   changeTitle(String newTitle){
     title = newTitle;
   }
 
-  changeLocation(LatLng newLocation){
+  changeLocation(MundoLocation newLocation){
     location = newLocation;
   }
 
   addText(String text){
-    if (postElements.length <= 10){
+    if (postElements.length <= 9){
       postElements.add(PostText(text: text, position: _positionCounter));
       _positionCounter++;
       updateElementPositions();
@@ -34,7 +39,7 @@ class Post{
   }
 
   addImage(File imageTemp){
-    if (postElements.length <= 10){
+    if (postElements.length <= 9){
       bool isNewImageMainImage = true;
       for (var element in postElements){
         if (element is PostImage){
@@ -129,6 +134,52 @@ class Post{
   @override
   String toString(){
     return "Post(title: $title, postElements: $postElements, mainImageIndex: $mainImageIndex, timeStamp: $creationUnixTimeStamp, location: $location)";
+  }
+
+  static Future<File> getImageFileFromUrl(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      final documentDirectory = await getTemporaryDirectory();
+      String rng = math.Random().nextInt(10000).toString();
+      final file = File('${documentDirectory.path}/temp_image_$rng.jpg');
+      await file.writeAsBytes(response.bodyBytes);
+      return file;
+    } catch (e) {
+      print('Error downloading image: $e');
+      rethrow;
+    }
+  }
+
+  static Future<Post> createFromFirebaseMap(QueryDocumentSnapshot<Map<String, dynamic>> doc) async {
+    List<dynamic> content = doc["content"];
+    List<dynamic> postElements = [];
+
+    for (var item in content) {
+      if (item["type"] == "text") {
+        postElements.add(PostText(text: item["text"], position: item["position"]));
+      } else if (item["type"] == "image") {
+        postElements.add(PostImage(
+          imageFile: await Post.getImageFileFromUrl(item["imageUrl"]),
+          isMainImage: item["isMainImage"],
+          position: item["position"]
+        ));
+      }
+    }
+    
+    return Post(
+      customId: doc["id"],
+      ownerId: doc["owner"],
+      title: doc["title"],
+      postElements: postElements,
+      mainImageIndex: doc["mainImageIndex"],
+      creationUnixTimeStamp: doc["date"],
+      location: MundoLocation(
+        googleMapsId: doc["loc"]["gMapsId"], 
+        city: doc["loc"]["city"], 
+        region: doc["loc"]["region"],
+        coordinates: LatLng(doc["loc"]["lat"], doc["loc"]["lng"])
+      )
+    );
   }
 }
 
