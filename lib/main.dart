@@ -3,11 +3,14 @@ import 'package:mundo/pages/widget_tree.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:mundo/theme/theme_provider.dart';
+import 'firebase_options.dart';
 
 /// function that initializes the app with Firebase services and sets the theme
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
   runApp(ChangeNotifierProvider(
     create: (context) => ThemeProvider(),
     child: const MiMundo(),

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1026259670179",
+    "firebase_url": "https://mundo-663ca-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "mundo-663ca",
     "storage_bucket": "mundo-663ca.appspot.com"
   },
@@ -12,7 +13,12 @@
           "package_name": "com.example.mundo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1026259670179-juk3ifap8msssptkfjur4kjd6o95aua9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB8dUCm1jiNi-HDgL13as5D7TCAtGuOmn0"
@@ -20,7 +26,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1026259670179-juk3ifap8msssptkfjur4kjd6o95aua9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1026259670179-e0eo00jvhkvokofbn45fs7vrdo61ljt2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mundo"
+              }
+            }
+          ]
         }
       }
     }
