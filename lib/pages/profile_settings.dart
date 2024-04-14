@@ -11,7 +11,7 @@ import 'package:mundo/pages/select_user_location_settings.dart';
 import 'package:mundo/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:mundo/models/auth.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 
 class ProfileSettingsView extends StatefulWidget {
   final MundoUser user;
@@ -31,6 +31,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
   String userNameInfoString = "Dies ist dein aktueller Benutzername";
   bool isUserNameAvailable = true;
 
+  /// func to load new possible profile picture
   Future selectImageFromGallery() async {
     try {
       final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -42,16 +43,18 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
       throw Exception('Failed to pick image: $e');
     }
   }
-
+  /// set current username in change username field
   @override
   void initState(){
     super.initState();
     _usernameController.text = widget.user.username;
   }
 
+  /// app bar with title and save button\
+  /// check if profile params where change, if so, update them
   Widget _appBar() {
     return AppBar(
-      title: const Text("Settings"),
+      title: const Text("Einstellungen"),
       backgroundColor: Theme.of(context).colorScheme.primary,
       actions: [
         IconButton(
@@ -71,15 +74,8 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
                   contentType: 'image/jpeg',
                   customMetadata: {'picked': 'image'}
                 )
-              );/*
-              if (uploadSuccess == true){
-                setState(() {
-                  Navigator.pop(context);
-                });
-              }*/
-            }/*else{
-              Navigator.pop(context);
-            }*/
+              );
+            }
             setState(() => Navigator.pop(context));
           },
         ),
@@ -87,6 +83,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
     );
   }
 
+  /// show current profile pic or changed profile pic
   Widget _profileImage(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -128,6 +125,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
     );
   }
 
+  /// switch for switching between light and dark mode
   Widget _darkModeSwitch(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -163,6 +161,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
     );
   }
 
+  /// button to get to the change user location view
   Widget _locationChangeOption(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -207,6 +206,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
     );
   }
 
+  /// button to sign out the user
   Widget _signOutButton(){
     return ElevatedButton(
       style: ButtonStyle(
@@ -227,7 +227,8 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
       ),
     );
   }
-
+  // TODO: implement delete acc
+  /*
   Widget _deleteAccountButton(){
     return ElevatedButton(
       style: ButtonStyle(
@@ -251,7 +252,8 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
       ),
     );
   }
-
+  */
+  /// shows information about chosen username (available, in use, current username)
   Widget _userNameInfo(){
     return Text(
       userNameInfoString,
@@ -290,13 +292,6 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
                   }else{
                     userNameInfoString = "Dieser Benutzername ist verfügbar.";
                     isUserNameAvailable = true;
-                    /*
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Dieser Benutzername ist bereits vergeben"),
-                      )
-                    );
-                    */
                   }
                   });
                 });
@@ -306,7 +301,7 @@ class _ProfileSettingsView extends State<ProfileSettingsView> {
             _darkModeSwitch(),
             _locationChangeOption(),
             _signOutButton(),
-            _deleteAccountButton()
+            //_deleteAccountButton()
           ]
         ),
       )

@@ -19,12 +19,14 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  /// retrieves email from email insert view
   @override
   void initState() {
     super.initState();
     _emailController.text = widget.email;
   }
 
+  /// sign in method to display error if necessary
   Future<void> signInWithEmailAndPassword() async {
     try {
       await AuthService().signInWithEmailAndPassword(
@@ -38,6 +40,7 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  /// login title
   Widget _title(){
     return const Padding(
       padding: EdgeInsets.all(30.0),
@@ -52,15 +55,17 @@ class _LoginViewState extends State<LoginView> {
     );
   } 
 
+  /// error message
   Widget _errorMessage(){
     return Text(
-      errorMessage == '' ?  '' : 'Humm ? $errorMessage',
+      errorMessage == '' ?  '' : '$errorMessage',
       style: const TextStyle(
         color: Colors.red
       ),
     );
   }
 
+  /// button used to sign in the user
   Widget _signInButton(){
     return ElevatedButton(
       style: ButtonStyle(
@@ -82,6 +87,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
+  /// button that allows to switch to register view
   Widget _switchToRegister(){
     return ElevatedButton(
       style: ButtonStyle(

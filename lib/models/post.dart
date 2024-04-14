@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// class that represents a post in the app
 class Post{
   String id;
   String ownerId;
@@ -22,14 +23,17 @@ class Post{
     id = customId ?? const Uuid().v4(),
     creationUnixTimeStamp = creationUnixTimeStamp ?? DateTime.now().toUtc().millisecondsSinceEpoch;
 
+  /// setter for title
   changeTitle(String newTitle){
     title = newTitle;
   }
 
+  /// setter for location
   changeLocation(MundoLocation newLocation){
     location = newLocation;
   }
 
+  /// add a text element to the post if there are less than 10 elements
   addText(String text){
     if (postElements.length <= 9){
       postElements.add(PostText(text: text, position: _positionCounter));
@@ -38,6 +42,8 @@ class Post{
     }
   }
 
+  /// add an image element to the post if there are less than 10 elements\
+  /// set it to main image if its the first selected image
   addImage(File imageTemp){
     if (postElements.length <= 9){
       bool isNewImageMainImage = true;
@@ -59,18 +65,24 @@ class Post{
     }
   }
 
+  /// delete a text element from the post\
+  /// update the positions of the remaining elements
   deleteText(PostText postText){
     postElements.remove(postText);
     updateElementPositions();
     _positionCounter--;
   }
 
+  /// delete an image element from the post\
+  /// update the positions of the remaining elements
   deleteImage(PostImage postImage){
     postElements.remove(postImage);
     updateElementPositions();
     _positionCounter--;
   }
 
+  /// update the positions of the elements in the post\
+  /// is used to keep the positions from 0-9 of the elements in the list up to date
   updateElementPositions(){
     bool mainImageFound = false;
     for (var i = 0; i < postElements.length; i++) {
@@ -97,10 +109,13 @@ class Post{
     }
   }
 
+  /// setter unix timestamp
   setCreationTimeStamp(){
     creationUnixTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
+  /// check if the post has a text and an image element\
+  /// can be used to check if a post is valid
   bool getHasTextAndImage(){
     bool hasText = false;
     bool hasImage = false;
@@ -116,6 +131,7 @@ class Post{
     return hasText && hasImage;
   }
 
+  /// delete all elements that are empty
   deleteNotNecessaryElements(){
     final copy = List.from(postElements); // copy the list to avoid editing the iterated list
     for (var postElement in copy){
@@ -131,11 +147,14 @@ class Post{
     }
   }
 
+  /// standardmethod toString
   @override
   String toString(){
     return "Post(title: $title, postElements: $postElements, mainImageIndex: $mainImageIndex, timeStamp: $creationUnixTimeStamp, location: $location)";
   }
 
+  /// method to get a file from an image url
+  /// used to download images from the internet and save them as Flutter File in PostImage instance
   static Future<File> getImageFileFromUrl(String imageUrl) async {
     try {
       final response = await http.get(Uri.parse(imageUrl));
@@ -145,11 +164,11 @@ class Post{
       await file.writeAsBytes(response.bodyBytes);
       return file;
     } catch (e) {
-      print('Error downloading image: $e');
-      rethrow;
+      throw Exception('Error downloading image: $e');
     }
   }
 
+  /// method to create a Post instance from a Firebase map
   static Future<Post> createFromFirebaseMap(QueryDocumentSnapshot<Map<String, dynamic>> doc) async {
     List<dynamic> content = doc["content"];
     List<dynamic> postElements = [];
@@ -183,12 +202,14 @@ class Post{
   }
 }
 
+/// class that represents a text element in a post
 class PostText{
   String text;
   int position;
 
   PostText({required this.text, required this.position});
 
+  /// standardmethod toString
   @override
   String toString(){
     String stringText = "PostText(text: $text, position: $position)";
@@ -196,6 +217,7 @@ class PostText{
   }
 }
 
+/// class that represents an image element in a post
 class PostImage{
   final File imageFile;
   bool isMainImage;
@@ -203,6 +225,7 @@ class PostImage{
 
   PostImage({required this.imageFile, required this.isMainImage, required this.position});
 
+  /// standardmethod toString
   @override
   String toString(){
     String stringText = "PostImage(imageFile: $imageFile, isMainImage: $isMainImage, position: $position)";

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/models/user_data_manager.dart';
 import 'package:mundo/pages/location_view.dart';
 import 'package:mundo/pages/other_profile_view.dart';
@@ -24,12 +24,14 @@ class _SearchViewState extends State<SearchView>{
   List<MundoUser> foundUsers = [];
   List<MundoLocationWithoutCoordinates> foundLocations = [];
 
+  /// listener to search for users and locations when text changes
   @override
   void initState() {
     super.initState();
     _searchController.addListener(() =>_onSearchTextChanged(_searchController.text));
   }
 
+  /// dispose listener when view is removed from stack
   @override
   void dispose() {
     _searchController.removeListener(() =>_onSearchTextChanged(_searchController.text));
@@ -37,6 +39,7 @@ class _SearchViewState extends State<SearchView>{
     super.dispose();
   }
 
+  /// search for users and locations with given text
   void _onSearchTextChanged(String value) async {
     if (value != ""){
       List<MundoUser> retrievedUsers = await UserDataManager().searchUserNames(value);
@@ -46,6 +49,9 @@ class _SearchViewState extends State<SearchView>{
     }
   }
 
+  // TODO: implement suggestions for users or locations when clicking on the widgets
+  /// information to search for users and locations\
+  /// should be a button later to click and get suggestions
   Widget _searchTile(IconData icon, String title){
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -85,6 +91,7 @@ class _SearchViewState extends State<SearchView>{
     );
   }
   
+  /// row with two search tiles, one for user, one for location
   Widget _searchTileRow(){
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -95,6 +102,7 @@ class _SearchViewState extends State<SearchView>{
     );
   }
 
+  /// display search results or search tile
   Widget resultsOrTile(){
     if (foundUsers.isEmpty){
       return _searchTileRow();
@@ -121,6 +129,9 @@ class _SearchViewState extends State<SearchView>{
     }
   }
 
+  /// seachbar with autocomplete\
+  /// search for users and locations\
+  /// builds entry field and result tiles
   Widget searchBar(){
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) async {
@@ -150,7 +161,6 @@ class _SearchViewState extends State<SearchView>{
         );
       },
       optionsViewBuilder: (BuildContext context, Function(String) onSelected, Iterable<String> options) {
-        //var optionsList = options.toList();
         return Material(
           elevation: 0,
           child: Column(
@@ -213,18 +223,7 @@ class _SearchViewState extends State<SearchView>{
       backgroundColor: Theme.of(context).colorScheme.background,
       body: SafeArea(
         child: Column(
-          children: [/*
-            entryField(
-              context, 
-              MediaQuery.of(context).size.width-20,
-              50,
-              const EdgeInsets.fromLTRB(10, 10, 10, 10),
-              "Suche", 
-              _searchController, 
-              1,
-              innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5)
-            ),
-            */
+          children: [
             searchBar(),
             resultsOrTile()
           ],

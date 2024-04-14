@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// function to create a custom MiMundo entry field
 Widget entryField(
   BuildContext context,
   double? width,

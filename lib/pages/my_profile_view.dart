@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/material.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/models/auth.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/post_data_manager.dart';
 import 'package:mundo/models/user_data_manager.dart';
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:mundo/pages/post_view.dart';
 import 'package:mundo/pages/profile_settings.dart';
 import 'package:mundo/pages/select_post_location.dart';
@@ -25,18 +24,15 @@ class _MyProfileViewState extends State<MyProfileView> {
   MundoUser? user;
   List<Post>? posts;
 
+  // get current users data and posts
   @override
   void initState(){
     super.initState();
     userDataManager.getUserData().then((value) => {setState(() => user = value)});
-    //userDataManager.getProfileImageUrlOfUser(AuthService().currentUser!.uid).then((value) => {setState(() => profilePictureUrl = value)});
     postDataManager.getPostsByUserId(AuthService().currentUser!.uid).then((value) => {setState(() => posts = value)});
   }
 
-  Future<void> signOut() async {
-    await AuthService().signOut();
-  }
-
+  // headline with username and location
   Widget profileHeadline(){
     return Padding(
       padding: const EdgeInsets.all(5.0),
@@ -83,6 +79,7 @@ class _MyProfileViewState extends State<MyProfileView> {
     );
   }
 
+  /// header containing profile picture and post, follower and following count
   Widget profileHeader(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
@@ -177,12 +174,14 @@ class _MyProfileViewState extends State<MyProfileView> {
     );
   }
 
+  /// divider between profile header and posts
   Widget profileDivider(){
     return const Divider(
       color: Colors.grey,
     );
   }
 
+  /// post field containing main image, title and location
   Widget postField(
     Post post,
   ){
@@ -252,6 +251,7 @@ class _MyProfileViewState extends State<MyProfileView> {
     );
   }
 
+  /// list that invokes postFields
   Widget postFieldList(){
     if (posts == null || posts!.isEmpty){
       return const Text("Keine Posts vorhanden");
@@ -262,6 +262,7 @@ class _MyProfileViewState extends State<MyProfileView> {
     }
   }
 
+  /// FAB to create a new post
   Widget createPostFloatingButton(){
     return FloatingActionButton(
       backgroundColor: Theme.of(context).colorScheme.secondary,

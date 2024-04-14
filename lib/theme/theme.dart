@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// MiMundo light mode theme
 ThemeData lightMode = ThemeData( 
   useMaterial3: true,
   brightness: Brightness.light,
@@ -32,6 +33,7 @@ ThemeData lightMode = ThemeData(
   )
 );
 
+/// MiMundo dark mode theme
 ThemeData darkMode = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark, 

@@ -16,6 +16,9 @@ class WidgetTree extends StatefulWidget{
 class _WidgetTreeState extends State<WidgetTree>{
   AuthService authservice = AuthService();
 
+  /// build a widget tree as entry point for the app depending on auth state in Firebase\
+  /// if user is logged in, show home view\
+  /// if user is not logged in, show email insert view to decide between login and register then
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(

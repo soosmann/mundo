@@ -3,14 +3,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/user_data_manager.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 
+/// class that manages data traffic with Firebase related to MiMundo Posts
 class PostDataManager{
   final FirebaseFirestore db = FirebaseFirestore.instance;
   final AuthService authService = AuthService();
   final FirebaseStorage storage = FirebaseStorage.instance;
   final UserDataManager userDataManager = UserDataManager();
 
+  /// save a post image to Firebase Storage
+  /// returns the download URL of the image to be able to place it in a post Doc in Firestore Db
   Future<String> savePostImage(PostImage postImage, String postId) async {
     String? currentUserId = authService.currentUser?.uid;
 
@@ -40,6 +43,8 @@ class PostDataManager{
     return imageUrl;
   }
 
+  /// add a post to the Firestore Db\
+  /// increments the post count of the user who created the post
   Future<void> addPost(Post post) async {
     String? currentUserId = authService.currentUser?.uid;
 
@@ -91,13 +96,14 @@ class PostDataManager{
           
         incrementPostAmount(currentUserId);
       } on FirebaseException catch (e) {
-        print("Error: $e");
+        throw Exception("Error: $e");
       }
     } else {
-      print("No user logged in.");
+      throw Exception("No user logged in.");
     }
   }
 
+  /// get all posts of a user by their user id
   Future<List<Post>> getPostsByUserId(String userId) async {
     String? currentUserId = authService.currentUser?.uid;
     List<Post> posts = [];
@@ -107,7 +113,7 @@ class PostDataManager{
         .collection('posts')
         .where('owner', isEqualTo: userId) // index: owner ascending, date descending, __name__ descending
         .orderBy("date", descending: true)
-        .get();
+        .get(); // TODO: add pagination to not load all posts at once -> takes too much time
 
       for (var doc in result.docs){
         posts.add(await Post.createFromFirebaseMap(doc));
@@ -116,6 +122,7 @@ class PostDataManager{
     return posts;
   }
 
+  /// increment post amount of a user
   void incrementPostAmount(String userId){
     String? currentUserId = authService.currentUser?.uid;
 
@@ -124,6 +131,7 @@ class PostDataManager{
     }
   }
 
+  /// decrement post amount of a user
   void decrementPostAmount(String userId){
     String? currentUserId = authService.currentUser?.uid;
 
@@ -132,12 +140,15 @@ class PostDataManager{
     }
   }
 
+  /// get posts for the feed page of a user based on timestamp\
+  /// retrieves users the user follows\
+  /// based on this, get newest posts of user\
   Future<List<Post>> getPostsForFyPage(String userId, int timeStamp) async {
     String? currentUserId = authService.currentUser?.uid;
     List<Post> posts = [];
 
     if (currentUserId != null){
-      List<MundoUser> followingUsers = await userDataManager.getFollowings(userId);
+      List<MundoUser> followingUsers = await userDataManager.getFollowings(userId); // TODO: split getFollowings and getPostsForFyPage to only load followers once on fyp, not everytime new posts are loaded
       
       final postResults = await db
         .collection("posts")
@@ -154,6 +165,7 @@ class PostDataManager{
     return posts;
   }
 
+  /// delete a post and decrement the post amount of the user who created the post
   Future<void> deletePost(String postId) async {
     String? currentUserId = authService.currentUser?.uid;
 
@@ -168,11 +180,13 @@ class PostDataManager{
 
         decrementPostAmount(AuthService().currentUser!.uid);
       } on FirebaseException catch (e) {
-        print("Error: $e");
+        throw Exception("Error: $e");
       }
     }
   }
 
+  /// retrieve posts by Google Maps Id\
+  /// used to get posts for a location page, all posts have attached Google Maps Id
   Future<List<Post>> getPostsByLocationId(String googleMapsId) async {
     String? currentUserId = authService.currentUser?.uid;
     List<Post> posts = [];

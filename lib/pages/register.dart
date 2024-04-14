@@ -29,6 +29,7 @@ class _RegisterViewState extends State<RegisterView> {
     _emailController.text = widget.email;
   }
 
+  /// register user with email and password, set error string if necessary
   Future<void> registerWithEmailAndPassword(String email, String password) async {
     try {
       await AuthService().createUserWithEmailAndPassword(
@@ -46,6 +47,7 @@ class _RegisterViewState extends State<RegisterView> {
     }
   }
 
+  /// check if username is already in use, set error string if necessary
   Future<bool> isUsernameInUse(String username) async {
     try{
       return await UserDataManager().getIsUsernameInUse(username).then((result) {
@@ -69,6 +71,7 @@ class _RegisterViewState extends State<RegisterView> {
     }
   }
 
+  // registration title
   Widget _title(){
     return const Padding(
       padding: EdgeInsets.all(30.0),
@@ -83,6 +86,7 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
+  /// description func to give user input advice
   Widget _description(String text){
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -93,6 +97,7 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
+  /// error message field
   Widget _errorMessage(String errorMessage){
     return Text(
       errorMessage,
@@ -102,6 +107,7 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
+  /// button used to sign in the user
   Widget _signInButton(){
     return ElevatedButton(
       style: ButtonStyle(

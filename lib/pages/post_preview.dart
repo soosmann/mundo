@@ -5,7 +5,7 @@ import 'package:mundo/models/post_data_manager.dart';
 import 'package:mundo/models/user_data_manager.dart';
 import 'package:mundo/pages/home.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 
 class PostPreviewView extends StatefulWidget {
   final Post post;
@@ -23,13 +23,16 @@ class _PostPreviewView extends State<PostPreviewView> {
 
   bool isMapExpanded = false;
 
+  /// get user data to display profile image
   @override
   void initState() {
     super.initState();
     UserDataManager().getUserData().then((value) => setState(() => user = value));
   }
 
+  /// detects if post button was pressed, to avoid multiple posts
   final buttonPressedNotifier = ValueNotifier<bool>(false);
+  /// app bar with title and post Post button
   Widget _appBar() {
     return AppBar(
       title: Text(widget.post.title),
@@ -60,6 +63,7 @@ class _PostPreviewView extends State<PostPreviewView> {
     );
   }
 
+  /// display post title
   Widget _postTitle(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -88,6 +92,7 @@ class _PostPreviewView extends State<PostPreviewView> {
     );
   }
 
+  /// display location information and expandable map icon
   Widget _locationInfo(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -115,6 +120,7 @@ class _PostPreviewView extends State<PostPreviewView> {
     );
   }
 
+  /// display map with post location
   Widget _positionMap() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
@@ -155,6 +161,7 @@ class _PostPreviewView extends State<PostPreviewView> {
     );
   }
 
+  /// display post content
   Widget _postContent(){
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

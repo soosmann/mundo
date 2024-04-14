@@ -3,7 +3,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/location_data_manager.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/models/post.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:mundo/models/user_data_manager.dart';
@@ -34,6 +34,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
 
   MundoUser? user;
 
+  /// get user data and current location to display it on post location selection map
   @override
   void initState() {
     super.initState();
@@ -49,6 +50,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     });
   }
   
+  /// function to get current device location
   Future<LatLng> getLocation() async {
     Location location = Location();
     bool serviceEnabled;
@@ -76,6 +78,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     return LatLng(locationData.latitude!, locationData.longitude!);
   }
 
+  /// title for the view
   Widget headline(){
     return const Text(
       "Wo bist Du gewesen?",
@@ -86,6 +89,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
+  /// placeholder for the map
   Widget positionMapPlaceholder(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -113,6 +117,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
+  /// map with user location
   Widget positionMap() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
@@ -158,6 +163,9 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
   
+  /// entry field for location input\
+  /// calls the autocomplete function to get predicted locations\
+  /// creates textfield and options for the predicted locations
   Widget locationEntry(){
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) async {
@@ -217,6 +225,7 @@ class _SelectPostLocationViewState extends State<SelectPostLocationView> {
     );
   }
 
+  /// button to continue to the post creation view
   Widget continueButton(){
     return ElevatedButton(
       style: ButtonStyle(

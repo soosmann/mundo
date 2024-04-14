@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/models/user_data_manager.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/pages/other_profile_view.dart';
 
@@ -21,6 +21,7 @@ class _ShowFollowingsView extends State<ShowFollowingsView> {
   List<MundoUser> followedUsers = [];
   List<MundoUser> shownUsers = [];
 
+  /// retrieve following users of current user
   @override
   void initState(){
     super.initState();
@@ -31,6 +32,7 @@ class _ShowFollowingsView extends State<ShowFollowingsView> {
       })});
   }
 
+  /// search users based on string in the textfield
   List<MundoUser> _searchUsers(String value){
     if (value == ""){
       return followedUsers;
@@ -44,6 +46,7 @@ class _ShowFollowingsView extends State<ShowFollowingsView> {
     return foundUsers;
   }
 
+  /// app bar with title
   Widget _appBar() {
     return AppBar(
       title: const Text("Du folgst"),
@@ -51,6 +54,7 @@ class _ShowFollowingsView extends State<ShowFollowingsView> {
     );
   }
 
+  /// shows list of followed users
   Widget _followedUsersList(){
     return Expanded(
         child: ListView.builder(
@@ -83,8 +87,8 @@ class _ShowFollowingsView extends State<ShowFollowingsView> {
             _appBar(),
             entryField(
               context, 
-              380, 
-              50, 
+              MediaQuery.of(context).size.width-20, 
+              MediaQuery.of(context).size.height*0.06, 
               const EdgeInsets.fromLTRB(0, 10, 0, 10), 
               "Gefolgte Accounts durchsuchen", 
               searchInputController, 

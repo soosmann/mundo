@@ -23,6 +23,7 @@ class _CreatePostViewState extends State<CreatePostView> {
   UserDataManager dataSaver = UserDataManager();
   PostDataManager postDataManager = PostDataManager();
   
+  /// func to call image select and open gallery
   Future selectImageFromGallery() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -30,16 +31,19 @@ class _CreatePostViewState extends State<CreatePostView> {
       final imageTemp = File(image.path);
       setState(() => widget.post.addImage(imageTemp));
     } on PlatformException catch(e) {
-      print('Failed to pick image: $e');
+      throw Exception('Failed to pick image: $e');
     }
   }
 
+  /// post gets a new text element at first
   @override
   void initState(){
     super.initState();
     widget.post.addText("");
   }
 
+  /// icon to continue, firstly, delete all unnecessary elements\
+  /// then check if post has text and image, if so, navigate to post preview
   Widget _appBar() {
     return AppBar(
       title: Text(widget.post.title),
@@ -64,6 +68,7 @@ class _CreatePostViewState extends State<CreatePostView> {
     );
   }
 
+  /// custom entry field for post content
   Widget _entryField(
     String title,
     TextEditingController controller,
@@ -75,7 +80,7 @@ class _CreatePostViewState extends State<CreatePostView> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: SizedBox(
-          width: 380,
+          width: MediaQuery.of(context).size.width-20,
           child: TextField(
             controller: controller,
             onChanged: onChanged,
@@ -94,6 +99,7 @@ class _CreatePostViewState extends State<CreatePostView> {
     );
   }
 
+  /// displays the content of the post as a reorderable list
   Widget _postContent(){
     return Expanded(
       child: ReorderableListView(
@@ -177,8 +183,8 @@ class _CreatePostViewState extends State<CreatePostView> {
                         : null,
                       child: Image.file(
                         postElement.imageFile,
-                        width: 335,
-                        height: 335,
+                        width: MediaQuery.of(context).size.width-60,
+                        height: MediaQuery.of(context).size.width-60,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -210,6 +216,7 @@ class _CreatePostViewState extends State<CreatePostView> {
     );
   }
 
+  /// buttons to add text or image to the post
   Widget _addPostElementButtons(){
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -249,8 +256,8 @@ class _CreatePostViewState extends State<CreatePostView> {
             _appBar(),
             entryField(
               context, 
-              380, 
-              50, 
+              MediaQuery.of(context).size.width-20,
+              MediaQuery.of(context).size.height*0.06, 
               const EdgeInsets.fromLTRB(0, 10, 0, 10), 
               "Titel", 
               titleInputController, 

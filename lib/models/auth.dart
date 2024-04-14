@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// class that provides authentication services to the app
 class AuthService with ChangeNotifier {
   // makes AuthService a singleton
   static final AuthService _instance = AuthService._internal();
@@ -15,6 +16,7 @@ class AuthService with ChangeNotifier {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
+  /// sign in with email and password
   Future<void> signInWithEmailAndPassword({
     required String email, 
     required String password
@@ -25,6 +27,7 @@ class AuthService with ChangeNotifier {
     );
   }
   
+  /// create user with email and password
   Future<void> createUserWithEmailAndPassword({
     required String email, 
     required String password
@@ -35,10 +38,12 @@ class AuthService with ChangeNotifier {
     );
   }
 
+  /// sign out
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
+  /// check if given email is in use
   Future<bool> isEmailInUse(String email) async {
     try {
       List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(email);

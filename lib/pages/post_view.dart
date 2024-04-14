@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/user_data_manager.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -21,12 +21,15 @@ class _PostView extends State<PostView> {
   MundoUser? user;
   bool isMapExpanded = false;
 
+  /// get user data to display profile image if it was not passed as parameter
+  /// OtherProfile view has MundoUser as necessary parameter, MyProfileView has it as optional
   @override
   void initState() {
     super.initState();
     widget.user != null ? user = widget.user : UserDataManager().getUserData().then((value) => setState(() => user = value));
   }
 
+  /// app bar with title
   Widget _appBar(BuildContext context) {
     return AppBar(
       title: Text(widget.post.title),
@@ -34,6 +37,7 @@ class _PostView extends State<PostView> {
     );
   }
 
+  /// post title with profile image, title and delete button if it is own post
   Widget _postTitle(BuildContext context){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -73,6 +77,7 @@ class _PostView extends State<PostView> {
     );
   }
 
+  /// location info with city and region and expandable map
   Widget _locationInfo(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -100,6 +105,7 @@ class _PostView extends State<PostView> {
     );
   }
 
+  /// map with profile Image on post location
   Widget positionMap(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
@@ -138,7 +144,8 @@ class _PostView extends State<PostView> {
       ),
     );
   }
-
+  
+  /// post content with text and images
   Widget _postContent(BuildContext context){
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

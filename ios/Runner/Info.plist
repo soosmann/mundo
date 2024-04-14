@@ -46,8 +46,13 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Your description here</string>
+	<string>Damit Du Fotos zu deinem Post hinzufügen kannst, benötigen die App Zugriff auf deine Fotos.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Your description here</string>
+	<string>Damit du ein Foto machen kannst und zum Post hinzufügen kannst, benötigt die App Zugriff auf deine Kamera.</string>
+	<key>NSLocationWhenInUsageDescription</key>
+	<string>Damit du Orte basierend auf deinem jetzigen Standort nutzen kannst, benötigt die App Zugriff auf diesen.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Damit du Orte basierend auf deinem jetzigen Standort nutzen kannst, benötigt die App Zugriff auf diesen.</string>
+
 </dict>
 </plist>

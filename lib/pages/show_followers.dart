@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/models/user_data_manager.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/pages/other_profile_view.dart';
 
@@ -21,6 +21,7 @@ class _ShowFollowersView extends State<ShowFollowersView> {
   List<MundoUser> followers = [];
   List<MundoUser> shownUsers = [];
 
+  /// retrieve followers depending on current user
   @override
   void initState(){
     super.initState();
@@ -28,9 +29,11 @@ class _ShowFollowersView extends State<ShowFollowersView> {
       .then((value) => {setState(() {
         followers = value;
         shownUsers = value;
-      })});
+      })
+    });
   }
 
+  /// func to search users by string value from input field
   List<MundoUser> _searchUsers(String value){
     if (value == ""){
       return followers;
@@ -44,6 +47,7 @@ class _ShowFollowersView extends State<ShowFollowersView> {
     return foundUsers;
   }
 
+  /// creates the app bar with title
   Widget _appBar() {
     return AppBar(
       title: const Text("Deine Follower"),
@@ -51,7 +55,8 @@ class _ShowFollowersView extends State<ShowFollowersView> {
     );
   }
 
-  Widget _followedUsersList(){
+  /// list of followers of user
+  Widget _followerList(){
     return Expanded(
         child: ListView.builder(
           itemCount: shownUsers.length,
@@ -83,16 +88,16 @@ class _ShowFollowersView extends State<ShowFollowersView> {
             _appBar(),
             entryField(
               context, 
-              380, 
-              50, 
+              MediaQuery.of(context).size.width-20, 
+              MediaQuery.of(context).size.height*0.06, 
               const EdgeInsets.fromLTRB(0, 10, 0, 10), 
-              "Gefolgte Accounts durchsuchen", 
+              "Folgende Accounts durchsuchen", 
               searchInputController, 
               1,
               onChanged: (value) => setState(() => shownUsers = _searchUsers(value)),
               innerPadding: const EdgeInsets.fromLTRB(10, 5, 10, 5)
             ),
-            _followedUsersList()
+            _followerList()
           ]
         ),
       )

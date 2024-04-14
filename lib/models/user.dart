@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mundo/models/location.dart';
 
+/// class that represents a user in the app\
+/// separate user class necessary because our user needs more complex attributes than Firestore Auth User class
 class MundoUser{
   final String id;
   final String email;
@@ -22,6 +24,7 @@ class MundoUser{
     required this.followingCount,
     this.location});
 
+  /// create an instance from a Firebase document
   factory MundoUser.fromFirebaseDoc(DocumentSnapshot<Map<String, dynamic>> doc){
     final data = doc.data()!;
     if (data["loc"] == null){
@@ -54,6 +57,7 @@ class MundoUser{
     }
   }
 
+  /// change location of a MundoUser
   void changeLocation(MundoLocation newLocation){
     location = newLocation;
   }

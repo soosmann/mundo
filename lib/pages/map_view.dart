@@ -4,7 +4,7 @@ import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/models/auth.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/post_data_manager.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/models/user_data_manager.dart';
 import 'package:mundo/pages/other_profile_view.dart';
 import 'package:mundo/pages/post_view.dart';
@@ -25,6 +25,8 @@ class _MapViewState extends State<MapView>{
 
   List<Post> posts = [];
 
+  /// retrieves posts for the current user and sets the first post\
+  /// download data of current user to show profile image
   @override
   void initState() {
     super.initState();
@@ -36,6 +38,7 @@ class _MapViewState extends State<MapView>{
     }));
   }
 
+  /// shows big main image
   Widget postMainImage(){
     return InkWell(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PostView(post: posts[postIndex], isOwnPost: false))),
@@ -65,6 +68,7 @@ class _MapViewState extends State<MapView>{
     );
   }
 
+  /// placeholder for main image
   Widget postMainImagePlaceholder(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -86,19 +90,8 @@ class _MapViewState extends State<MapView>{
       ),
     );
   }
-
-  Widget profileImagePlaceholder(){
-    return const SizedBox(
-      width: 50,
-      height: 50,
-      child: ClipOval(
-        child: Icon(
-          Icons.person
-        )
-      ),
-    );
-  }
   
+  /// displays the posts name
   Widget postInfoText(){
     return Container(
       width: MediaQuery.of(context).size.width-60, // image circle diameter = 50, and padding 2 * 5 = 10
@@ -117,6 +110,7 @@ class _MapViewState extends State<MapView>{
     );
   }
 
+  /// placeholder for post info string
   Widget postInfoTextPlaceholder(){
     return Container(
       width: MediaQuery.of(context).size.width-60, // image circle diameter = 50, and padding 2 * 5 = 10
@@ -135,6 +129,7 @@ class _MapViewState extends State<MapView>{
     );
   }
 
+  /// row that combines the users profile image with the post name
   Widget profileImageAndText(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -150,6 +145,7 @@ class _MapViewState extends State<MapView>{
     );
   }
 
+  /// row that combines placeholders for user image and post name
   Widget profileImageAndTextPlaceholder(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -162,7 +158,10 @@ class _MapViewState extends State<MapView>{
     );
   }
 
-  Widget mundoMap() {
+  /// show the post location on the map\
+  /// contains buttons to navigate through the posts\
+  /// when the second last post is reached, more posts are loaded based on the timestamp of the oldest retrieved post
+  Widget postLocationMap() {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -267,7 +266,8 @@ class _MapViewState extends State<MapView>{
     );
   }
 
-  Widget mundoMapPlaceholder(){
+  /// placeholder for post location map
+  Widget postLocationMapPlaceholder(){
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -358,7 +358,8 @@ class _MapViewState extends State<MapView>{
       ),
     );
   }
-
+  /// TODO: message user to follow users with posts if user doesnt follow users (with posts)
+  /// build this view depending if posts are available or not
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -369,14 +370,14 @@ class _MapViewState extends State<MapView>{
             children: [
               postMainImagePlaceholder(),
               profileImageAndTextPlaceholder(),
-              mundoMapPlaceholder(),
+              postLocationMapPlaceholder(),
             ],
           )
         : Column(
             children: [
               postMainImage(),
               profileImageAndText(),
-              mundoMap(),
+              postLocationMap(),
             ]
           )
       ),

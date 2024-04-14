@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
 import 'package:mundo/models/location_data_manager.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:mundo/helpful_widgets/entry_field.dart';
 import 'package:mundo/models/location.dart';
@@ -25,6 +25,7 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
   String locationInput = "";
   MundoLocation? chosenLocation;
 
+  /// get current location of device to set it on map
   @override
   void initState() {
     super.initState();
@@ -43,6 +44,7 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
     }
   }
   
+  /// function to get current device location
   Future<LatLng> getLocation() async {
     Location location = Location();
     bool serviceEnabled;
@@ -69,6 +71,7 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
     return LatLng(locationData.latitude!, locationData.longitude!);
   }
 
+  /// app bar
   Widget _appBar(){
     return AppBar(
       title: const Text("Wähle deinen Standort"),
@@ -87,17 +90,8 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
     );
   }
 
-  Widget headline(){
-    return const Text(
-      "Wo wohnst du?",
-      style: TextStyle(
-        fontSize: 30,
-        fontWeight: FontWeight.bold
-      ),
-    );
-  }
-
-  Widget positionMapPlaceholder(){
+  /// placeholder for the map
+  Widget _positionMapPlaceholder(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
       child: ClipRRect(
@@ -124,7 +118,8 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
     );
   }
 
-  Widget positionMap() {
+  /// map with selected user location
+  Widget _positionMap() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
       child: ClipRRect(
@@ -169,6 +164,9 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
     );
   }
   
+  /// entry field for location\
+  /// gets autocomplete suggestions from google maps api\
+  /// renders search field and list of suggestions
   Widget _locationEntry(){
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) async {
@@ -239,7 +237,7 @@ class _SelectUserLocationViewSettingsState extends State<SelectUserLocationSetti
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
               _locationEntry(),
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
-              chosenLocation != null ? positionMap() : positionMapPlaceholder(),
+              chosenLocation != null ? _positionMap() : _positionMapPlaceholder(),
               SizedBox(height: MediaQuery.of(context).size.height*0.04),
             ],
           ),

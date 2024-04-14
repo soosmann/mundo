@@ -13,11 +13,17 @@ class InsertEmailView extends StatefulWidget {
 class _InsertEmailViewState extends State<InsertEmailView> {
   final TextEditingController _emailController = TextEditingController();
 
+  // triggers redirection to sign in or register
+  void checkRegisterOrSignIn(String email){
+    widget.onEmailSubmitted(email);
+  }
+
+  // title text
   Widget _title(){
     return const Padding(
       padding: EdgeInsets.all(60.0),
       child: Text(
-        "Willkommen bei Mundo",
+        "Willkommen bei MiMundo",
         style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -26,10 +32,7 @@ class _InsertEmailViewState extends State<InsertEmailView> {
     );
   } 
 
-  void checkRegisterOrSignIn(String email){
-    widget.onEmailSubmitted(email);
-  }
-
+  /// continue button
   Widget _submitButton(){
     return ElevatedButton(
       style: ButtonStyle(

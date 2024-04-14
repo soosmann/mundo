@@ -4,6 +4,7 @@ import 'package:mundo/pages/my_profile_view.dart';
 import 'package:mundo/pages/search_view.dart';
 import 'package:mundo/pages/select_post_location.dart';
 
+/// HomeView widget that contains the bottom navigation bar and the tabs
 class HomeView extends StatefulWidget{
   const HomeView({super.key});
 

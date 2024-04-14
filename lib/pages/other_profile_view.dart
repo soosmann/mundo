@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
+import 'package:flutter/material.dart';
 import 'package:mundo/helpful_widgets/round_profile_image.dart';
-import 'package:mundo/models/mundo_user.dart';
+import 'package:mundo/models/user.dart';
 import 'package:mundo/models/post.dart';
 import 'package:mundo/models/post_data_manager.dart';
 import 'package:mundo/models/user_data_manager.dart';
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:mundo/pages/post_view.dart';
 import 'package:mundo/pages/show_followers.dart';
 import 'package:mundo/pages/show_followings.dart';
@@ -21,18 +20,18 @@ class _OtherProfileViewState extends State<OtherProfileView> {
   final UserDataManager userDataManager = UserDataManager();
   final PostDataManager postDataManager = PostDataManager();
 
-  String profilePictureUrl = "";
   List<Post>? posts;
   bool? isUserFollowing;
 
+  /// get if the current user is following the user of this profile and the users posts
   @override
   void initState(){
     super.initState();
-    userDataManager.getProfileImageUrlOfUser(widget.user.id).then((value) => {setState(() => profilePictureUrl = value)});
     userDataManager.isUserFollowing(widget.user.id).then((value) => {setState(() => isUserFollowing = value)});
     postDataManager.getPostsByUserId(widget.user.id).then((value) => {setState(() => posts = value)});
   }
 
+  /// profile headline including back button, username, location
   Widget profileHeadline(){
     return Padding(
       padding: const EdgeInsets.all(5.0),
@@ -67,6 +66,8 @@ class _OtherProfileViewState extends State<OtherProfileView> {
     );
   }
 
+  /// profile header including profile picture, post count, follower count, following count\
+  /// button to follow or unfollow the user
   Widget profileHeader(){
     return Padding(
       padding: const EdgeInsets.all(10),
@@ -163,7 +164,7 @@ class _OtherProfileViewState extends State<OtherProfileView> {
                               "Folgen",
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white,//Theme.of(context).textTheme.labelLarge!.color,
+                                color: Colors.white,
                               ),
                             )
                           ),
@@ -207,12 +208,14 @@ class _OtherProfileViewState extends State<OtherProfileView> {
     );
   }
 
+  /// divider between profile header and posts
   Widget profileDivider(){
     return const Divider(
       color: Colors.grey,
     );
   }
 
+  /// post field including image, title, location
   Widget postField(
     Post post,
   ){
@@ -282,6 +285,7 @@ class _OtherProfileViewState extends State<OtherProfileView> {
     );
   }
 
+  /// list to invoke postFields
   Widget postFieldList(){
     if (posts == null || posts!.isEmpty){
       return const Text("Keine Posts vorhanden");

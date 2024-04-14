@@ -20,6 +20,8 @@ class _LocationViewState extends State<LocationView> {
 
   List<Post> posts = [];
 
+  /// receives a MundoLocationWithoutCoordinates, needs to get the coordinates to create a MundoLocation\
+  /// retrieves posts by location id
   @override
   void initState() {
     super.initState();
@@ -34,6 +36,8 @@ class _LocationViewState extends State<LocationView> {
     PostDataManager().getPostsByLocationId(widget.locationWithoutCoordinates.googleMapsId).then((value) => setState(() => posts = value));
   }
 
+  /// title of the location\
+  /// icon to show or hide map
   Widget _locationTitle(){
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
@@ -74,6 +78,7 @@ class _LocationViewState extends State<LocationView> {
     );
   }
 
+  /// shows location on map
   Widget _positionMap() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
@@ -118,6 +123,7 @@ class _LocationViewState extends State<LocationView> {
     );
   }
 
+  /// placeholder for map
   Widget _positionMapPlaceholder() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 2, 10, 2),
@@ -139,6 +145,7 @@ class _LocationViewState extends State<LocationView> {
     );
   }
 
+  /// shows map or placeholder
   Widget _positionMapOrPlaceholder(){
     if (isMapExpanded) {
       return location == null ? _positionMapPlaceholder() : _positionMap();
@@ -147,6 +154,7 @@ class _LocationViewState extends State<LocationView> {
     }
   }
 
+  /// shows main image of retrieved posts
   Widget _imageGrid() {
     return Padding(
       padding: const EdgeInsets.all(10),
@@ -179,6 +187,7 @@ class _LocationViewState extends State<LocationView> {
     );
   }
 
+  /// information that no images have been posted yet
   Widget _noImagesInfo(){
     return const Padding(
       padding: EdgeInsets.all(10),
